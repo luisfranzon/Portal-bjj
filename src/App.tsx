@@ -1,0 +1,328 @@
+import { useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { User as AuthUser } from 'firebase/auth';
+import {
+  auth,
+  saveTechnique,
+  subscribeToTechniques,
+  deleteTechnique,
+  logout
+} from './firebase';
+import type { Technique } from './types';
+import LoginScreen from './components/LoginScreen';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import CalendarView from './components/CalendarView';
+import LessonViewer from './components/LessonViewer';
+import TechniqueModal from './components/TechniqueModal';
+
+export default function App() {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [techniques, setTechniques] = useState<Technique[]>([]);
+
+  // Navigation state
+  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'calendar' | 'lesson'>('dashboard');
+  const [selectedTechnique, setSelectedTechnique] = useState<Technique | null>(null);
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTechnique, setEditingTechnique] = useState<Technique | null>(null);
+
+  // Auth monitor
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      setUser(authUser);
+      setAuthLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Real-time Firestore subscription
+  useEffect(() => {
+    if (!user) {
+      setTechniques([]);
+      return;
+    }
+
+    setDataLoading(true);
+    const unsubscribe = subscribeToTechniques(
+      user.uid,
+      (data) => {
+        setTechniques(data);
+        setDataLoading(false);
+        
+        // Keep the currently selected technique updated if it changes in database
+        if (selectedTechnique) {
+          const updated = data.find((t) => t.id === selectedTechnique.id);
+          if (updated) {
+            setSelectedTechnique(updated);
+          } else {
+            // It was deleted
+            setSelectedTechnique(null);
+            setSelectedTab('dashboard');
+          }
+        }
+      },
+      (error) => {
+        console.error('Falha de sincronização real-time: ', error);
+        setDataLoading(false);
+      }
+    );
+
+    return unsubscribe;
+  }, [user, selectedTechnique?.id]);
+
+  const handleLogout = async () => {
+    if (window.confirm('Tem certeza que deseja sair do portal?')) {
+      try {
+        await logout();
+        setSelectedTechnique(null);
+        setSelectedTab('dashboard');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  // CRUD handlers
+  const handleSaveTechnique = async (
+    techniqueRaw: Omit<Technique, 'userId' | 'createdAt' | 'updatedAt'>,
+    isEdit: boolean
+  ) => {
+    try {
+      await saveTechnique(techniqueRaw, isEdit);
+      setIsModalOpen(false);
+      setEditingTechnique(null);
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao salvar posição no banco.');
+    }
+  };
+
+  const handleDeleteTechnique = async (id: string) => {
+    if (window.confirm('Deseja excluir permanentemente esta posição técnica?')) {
+      try {
+        await deleteTechnique(id);
+        if (selectedTechnique?.id === id) {
+          setSelectedTechnique(null);
+          setSelectedTab('dashboard');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Erro ao excluir do banco.');
+      }
+    }
+  };
+
+  const handleUpdateProgress = async (id: string, progress: number) => {
+    const match = techniques.find((t) => t.id === id);
+    if (!match) return;
+
+    try {
+      await saveTechnique(
+        {
+          id: match.id,
+          name: match.name,
+          group: match.group,
+          description: match.description || '',
+          videoUrl: match.videoUrl || '',
+          testedInSparring: match.testedInSparring,
+          progress: Number(progress),
+        },
+        true
+      );
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao atualizar progresso.');
+    }
+  };
+
+  const handleToggleSparring = async (id: string, currentStatus: boolean) => {
+    const match = techniques.find((t) => t.id === id);
+    if (!match) return;
+
+    try {
+      await saveTechnique(
+        {
+          id: match.id,
+          name: match.name,
+          group: match.group,
+          description: match.description || '',
+          videoUrl: match.videoUrl || '',
+          testedInSparring: !currentStatus,
+          progress: match.progress,
+        },
+        true
+      );
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao atualizar sparring.');
+    }
+  };
+
+  const handleUpdateDescription = async (id: string, notes: string) => {
+    const match = techniques.find((t) => t.id === id);
+    if (!match) return;
+
+    try {
+      await saveTechnique(
+        {
+          id: match.id,
+          name: match.name,
+          group: match.group,
+          description: notes,
+          videoUrl: match.videoUrl || '',
+          testedInSparring: match.testedInSparring,
+          progress: match.progress,
+        },
+        true
+      );
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao atualizar notas de treino.');
+      throw e;
+    }
+  };
+
+  // Training log handlers
+  const handleAddTraining = async (dateStr: string) => {
+    const randomId = 'training_' + Math.random().toString(36).substring(2, 15);
+    try {
+      await saveTechnique(
+        {
+          id: randomId,
+          name: dateStr,
+          group: 'Outros',
+          progress: 0,
+          testedInSparring: false,
+          description: 'REGISTRO_TREINO',
+        },
+        false
+      );
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao registrar treino.');
+      throw e;
+    }
+  };
+
+  const handleRemoveTraining = async (id: string) => {
+    try {
+      await deleteTechnique(id);
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao remover presença de treino.');
+      throw e;
+    }
+  };
+
+  const openAddModal = () => {
+    setEditingTechnique(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (tech: Technique) => {
+    setEditingTechnique(tech);
+    setIsModalOpen(true);
+  };
+
+  // Renders
+  if (authLoading) {
+    return (
+      <div className="min-h-screen w-full flex flex-col justify-center items-center bg-slate-950 text-slate-100 font-sans">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-xs uppercase font-black text-slate-500 tracking-wider">
+          Carregando Dojo Portal...
+        </p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <LoginScreen
+        onLoginSuccess={() => {}}
+        isLoading={authLoading}
+        setIsLoading={setAuthLoading}
+      />
+    );
+  }
+
+  return (
+    <div className="flex w-full h-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
+      
+      {/* Sidebar Navigation */}
+      <Sidebar
+        techniques={techniques}
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+        selectedTechnique={selectedTechnique}
+        setSelectedTechnique={setSelectedTechnique}
+        onAddTechnique={openAddModal}
+        onLogout={handleLogout}
+        userEmail={user.email}
+      />
+
+      {/* Main Content Pane */}
+      <div className="flex-1 h-screen relative flex flex-col min-w-0">
+        
+        {dataLoading && techniques.length === 0 ? (
+          <div className="flex-1 flex flex-col justify-center items-center">
+            <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
+            <p className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
+              Sincronizando diário...
+            </p>
+          </div>
+        ) : (
+          <>
+            {selectedTab === 'dashboard' && (
+              <Dashboard
+                techniques={techniques}
+                onSelectTechnique={(tech) => {
+                  setSelectedTechnique(tech);
+                  setSelectedTab('lesson');
+                }}
+                onAddTechnique={openAddModal}
+                onSelectTab={setSelectedTab}
+              />
+            )}
+
+            {selectedTab === 'calendar' && (
+              <CalendarView
+                techniques={techniques}
+                onAddTraining={handleAddTraining}
+                onRemoveTraining={handleRemoveTraining}
+              />
+            )}
+
+            {selectedTab === 'lesson' && selectedTechnique && (
+              <LessonViewer
+                technique={selectedTechnique}
+                onEdit={openEditModal}
+                onDelete={handleDeleteTechnique}
+                onUpdateProgress={handleUpdateProgress}
+                onToggleSparring={handleToggleSparring}
+                onUpdateDescription={handleUpdateDescription}
+              />
+            )}
+          </>
+        )}
+
+      </div>
+
+      {/* Modals & Popups */}
+      <TechniqueModal
+        isOpen={isModalOpen}
+        technique={editingTechnique}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingTechnique(null);
+        }}
+        onSave={handleSaveTechnique}
+      />
+
+    </div>
+  );
+}
