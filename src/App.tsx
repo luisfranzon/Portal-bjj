@@ -218,6 +218,64 @@ export default function App() {
     }
   };
 
+  const handleImportBackup = async (importedItems: any[]) => {
+    if (!user) {
+      alert('Usuário não autenticado.');
+      return;
+    }
+
+    if (!Array.isArray(importedItems)) {
+      alert('Arquivo inválido. O backup deve ser uma lista (array) de registros.');
+      return;
+    }
+
+    if (importedItems.length === 0) {
+      alert('O arquivo de backup está vazio.');
+      return;
+    }
+
+    const confirmImport = window.confirm(
+      `Deseja importar ${importedItems.length} registros (técnicas/treinos) para o seu banco de dados atual? Itens com o mesmo ID serão atualizados/sobrescritos.`
+    );
+    if (!confirmImport) return;
+
+    setDataLoading(true);
+    let success = 0;
+    let failed = 0;
+
+    for (const item of importedItems) {
+      try {
+        if (!item.id || !item.name || !item.group) {
+          console.warn('Item ignorado devido a formato inválido:', item);
+          failed++;
+          continue;
+        }
+
+        const isEdit = techniques.some((t) => t.id === item.id);
+
+        await saveTechnique(
+          {
+            id: item.id,
+            name: item.name,
+            group: item.group,
+            description: item.description || '',
+            progress: Number(item.progress) || 0,
+            videoUrl: item.videoUrl || '',
+            testedInSparring: Boolean(item.testedInSparring),
+          },
+          isEdit
+        );
+        success++;
+      } catch (err) {
+        console.error('Erro ao salvar item importado:', err);
+        failed++;
+      }
+    }
+
+    setDataLoading(false);
+    alert(`Importação concluída!\nSucesso: ${success}\nFalhas: ${failed}`);
+  };
+
   const openAddModal = () => {
     setEditingTechnique(null);
     setIsModalOpen(true);
@@ -286,6 +344,7 @@ export default function App() {
                 }}
                 onAddTechnique={openAddModal}
                 onSelectTab={setSelectedTab}
+                onImportBackup={handleImportBackup}
               />
             )}
 

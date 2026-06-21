@@ -17,14 +17,33 @@ interface DashboardProps {
   onSelectTechnique: (tech: Technique) => void;
   onAddTechnique: () => void;
   onSelectTab: (tab: 'dashboard' | 'calendar' | 'lesson') => void;
+  onImportBackup: (items: any[]) => void;
 }
 
 export default function Dashboard({
   techniques,
   onSelectTechnique,
   onAddTechnique,
-  onSelectTab
+  onSelectTab,
+  onImportBackup
 }: DashboardProps) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        onImportBackup(json);
+      } catch (err) {
+        alert('Erro ao ler o arquivo JSON. Certifique-se de que é um JSON válido.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   // Separate techniques and training logs
   const actualTechniques = useMemo(() => {
     return techniques.filter((t) => t.description !== 'REGISTRO_TREINO');
@@ -326,10 +345,20 @@ export default function Dashboard({
 
           <button
             onClick={onAddTechnique}
-            className="w-full mt-2 py-2.5 rounded-xl border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/30 text-slate-400 hover:text-slate-350 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center"
+            className="w-full mt-2 py-2.5 rounded-xl border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/30 text-slate-400 hover:text-slate-350 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center block"
           >
             + Adicionar Nova Posição
           </button>
+
+          <label className="w-full py-2.5 rounded-xl border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/30 text-slate-400 hover:text-slate-350 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center flex items-center justify-center gap-2 mt-2">
+            <span>📥 Importar Backup (.json)</span>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </label>
         </div>
 
       </div>
