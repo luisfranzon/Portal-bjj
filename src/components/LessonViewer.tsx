@@ -11,7 +11,7 @@ import {
   Save,
   HelpCircle,
   FileText,
-  ChevronLeft
+  X
 } from 'lucide-react';
 
 interface LessonViewerProps {
@@ -86,10 +86,10 @@ export default function LessonViewer({
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={onBack}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-600 border border-slate-200 active:scale-95 transition-all cursor-pointer mr-1 shrink-0 flex items-center justify-center shadow-sm"
-            title="Voltar"
+            className="p-2 rounded-xl bg-slate-100 hover:bg-red-50 hover:text-red-500 hover:border-red-200 text-slate-550 border border-slate-200 active:scale-95 transition-all cursor-pointer mr-1 shrink-0 flex items-center justify-center shadow-sm"
+            title="Fechar aula"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
           
           <div className="min-w-0">

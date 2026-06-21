@@ -12,7 +12,6 @@ import type { Technique } from './types';
 import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
-import LessonViewer from './components/LessonViewer';
 import TechniqueModal from './components/TechniqueModal';
 
 export default function App() {
@@ -22,7 +21,6 @@ export default function App() {
   const [techniques, setTechniques] = useState<Technique[]>([]);
 
   // Navigation state
-  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'lesson'>('dashboard');
   const [selectedTechnique, setSelectedTechnique] = useState<Technique | null>(null);
 
   // Drilldown and filter states
@@ -65,7 +63,6 @@ export default function App() {
           } else {
             // It was deleted
             setSelectedTechnique(null);
-            setSelectedTab('dashboard');
           }
         }
       },
@@ -83,7 +80,6 @@ export default function App() {
       try {
         await logout();
         setSelectedTechnique(null);
-        setSelectedTab('dashboard');
       } catch (e) {
         console.error(e);
       }
@@ -111,7 +107,6 @@ export default function App() {
         await deleteTechnique(id);
         if (selectedTechnique?.id === id) {
           setSelectedTechnique(null);
-          setSelectedTab('dashboard');
         }
       } catch (e) {
         console.error(e);
@@ -287,8 +282,12 @@ export default function App() {
       
       {/* Sidebar Navigation */}
       <Sidebar
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
+        selectedTab="dashboard"
+        setSelectedTab={(tab) => {
+          if (tab === 'dashboard') {
+            setSelectedTechnique(null);
+          }
+        }}
         onAddTechnique={openAddModal}
         onLogout={handleLogout}
         userEmail={user.email}
@@ -305,42 +304,24 @@ export default function App() {
             </p>
           </div>
         ) : (
-          <>
-            {selectedTab === 'dashboard' && (
-              <Dashboard
-                techniques={techniques}
-                onSelectTechnique={(tech) => {
-                  setSelectedTechnique(tech);
-                  setSelectedTab('lesson');
-                }}
-                onAddTechnique={openAddModal}
-                onImportBackup={handleImportBackup}
-                selectedModule={selectedModule}
-                setSelectedModule={setSelectedModule}
-                beltFilter={beltFilter}
-                setBeltFilter={setBeltFilter}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-              />
-            )}
-
-
-
-            {selectedTab === 'lesson' && selectedTechnique && (
-              <LessonViewer
-                technique={selectedTechnique}
-                onEdit={openEditModal}
-                onDelete={handleDeleteTechnique}
-                onUpdateProgress={handleUpdateProgress}
-                onToggleSparring={handleToggleSparring}
-                onUpdateDescription={handleUpdateDescription}
-                onBack={() => {
-                  setSelectedTechnique(null);
-                  setSelectedTab('dashboard');
-                }}
-              />
-            )}
-          </>
+          <Dashboard
+            techniques={techniques}
+            onSelectTechnique={setSelectedTechnique}
+            onAddTechnique={openAddModal}
+            onImportBackup={handleImportBackup}
+            selectedModule={selectedModule}
+            setSelectedModule={setSelectedModule}
+            beltFilter={beltFilter}
+            setBeltFilter={setBeltFilter}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedTechnique={selectedTechnique}
+            onEditTechnique={openEditModal}
+            onDeleteTechnique={handleDeleteTechnique}
+            onUpdateProgress={handleUpdateProgress}
+            onToggleSparring={handleToggleSparring}
+            onUpdateDescription={handleUpdateDescription}
+          />
         )}
 
       </div>
