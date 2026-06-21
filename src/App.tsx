@@ -289,9 +289,9 @@ export default function App() {
   // Renders
   if (authLoading) {
     return (
-      <div className="min-h-screen w-full flex flex-col justify-center items-center bg-slate-950 text-slate-100 font-sans">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-xs uppercase font-black text-slate-500 tracking-wider">
+      <div className="min-h-screen w-full flex flex-col justify-center items-center bg-slate-50 text-slate-800 font-sans">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-xs uppercase font-black text-slate-400 tracking-wider font-bold">
           Carregando Dojo Portal...
         </p>
       </div>
@@ -309,7 +309,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex w-full h-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
+    <div className="flex w-full h-screen bg-slate-50 text-slate-800 overflow-hidden font-sans">
       
       {/* Sidebar Navigation */}
       <Sidebar
@@ -328,8 +328,8 @@ export default function App() {
         
         {dataLoading && techniques.length === 0 ? (
           <div className="flex-1 flex flex-col justify-center items-center">
-            <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
-            <p className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
+            <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3" />
+            <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider font-bold">
               Sincronizando diário...
             </p>
           </div>
