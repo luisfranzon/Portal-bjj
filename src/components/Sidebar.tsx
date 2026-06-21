@@ -4,7 +4,6 @@ import type { Technique } from '../types';
 import { getBeltForProgress } from '../utils/gym';
 import {
   LayoutDashboard,
-  Calendar,
   BookOpen,
   Plus,
   Search,
@@ -16,8 +15,8 @@ import {
 
 interface SidebarProps {
   techniques: Technique[];
-  selectedTab: 'dashboard' | 'calendar' | 'lesson';
-  setSelectedTab: (tab: 'dashboard' | 'calendar' | 'lesson') => void;
+  selectedTab: 'dashboard' | 'lesson';
+  setSelectedTab: (tab: 'dashboard' | 'lesson') => void;
   selectedTechnique: Technique | null;
   setSelectedTechnique: (technique: Technique | null) => void;
   onAddTechnique: () => void;
@@ -115,7 +114,7 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Main Navigation (Dashboard & Calendar) */}
+      {/* Main Navigation (Dashboard) */}
       <div className="p-4 space-y-1.5 shrink-0">
         <button
           onClick={() => {
@@ -130,21 +129,6 @@ export default function Sidebar({
         >
           <LayoutDashboard className="w-4 h-4 text-blue-600" />
           <span>Painel Geral</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setSelectedTab('calendar');
-            setSelectedTechnique(null);
-          }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-            selectedTab === 'calendar'
-              ? 'bg-slate-100 text-slate-900 border border-slate-200 shadow-sm'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
-          }`}
-        >
-          <Calendar className="w-4 h-4 text-emerald-600" />
-          <span>Frequência de Treinos</span>
         </button>
       </div>
 

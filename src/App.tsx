@@ -12,7 +12,6 @@ import type { Technique } from './types';
 import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
-import CalendarView from './components/CalendarView';
 import LessonViewer from './components/LessonViewer';
 import TechniqueModal from './components/TechniqueModal';
 
@@ -23,7 +22,7 @@ export default function App() {
   const [techniques, setTechniques] = useState<Technique[]>([]);
 
   // Navigation state
-  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'calendar' | 'lesson'>('dashboard');
+  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'lesson'>('dashboard');
   const [selectedTechnique, setSelectedTechnique] = useState<Technique | null>(null);
 
   // Modal state
@@ -186,37 +185,7 @@ export default function App() {
     }
   };
 
-  // Training log handlers
-  const handleAddTraining = async (dateStr: string) => {
-    const randomId = 'training_' + Math.random().toString(36).substring(2, 15);
-    try {
-      await saveTechnique(
-        {
-          id: randomId,
-          name: dateStr,
-          group: 'Outros',
-          progress: 0,
-          testedInSparring: false,
-          description: 'REGISTRO_TREINO',
-        },
-        false
-      );
-    } catch (e) {
-      console.error(e);
-      alert('Erro ao registrar treino.');
-      throw e;
-    }
-  };
 
-  const handleRemoveTraining = async (id: string) => {
-    try {
-      await deleteTechnique(id);
-    } catch (e) {
-      console.error(e);
-      alert('Erro ao remover presença de treino.');
-      throw e;
-    }
-  };
 
   const handleImportBackup = async (importedItems: any[]) => {
     if (!user) {
@@ -343,18 +312,11 @@ export default function App() {
                   setSelectedTab('lesson');
                 }}
                 onAddTechnique={openAddModal}
-                onSelectTab={setSelectedTab}
                 onImportBackup={handleImportBackup}
               />
             )}
 
-            {selectedTab === 'calendar' && (
-              <CalendarView
-                techniques={techniques}
-                onAddTraining={handleAddTraining}
-                onRemoveTraining={handleRemoveTraining}
-              />
-            )}
+
 
             {selectedTab === 'lesson' && selectedTechnique && (
               <LessonViewer

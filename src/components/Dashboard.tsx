@@ -16,7 +16,6 @@ interface DashboardProps {
   techniques: Technique[];
   onSelectTechnique: (tech: Technique) => void;
   onAddTechnique: () => void;
-  onSelectTab: (tab: 'dashboard' | 'calendar' | 'lesson') => void;
   onImportBackup: (items: any[]) => void;
 }
 
@@ -24,7 +23,6 @@ export default function Dashboard({
   techniques,
   onSelectTechnique,
   onAddTechnique,
-  onSelectTab,
   onImportBackup
 }: DashboardProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,21 +170,20 @@ export default function Dashboard({
         </div>
 
         {/* Card 3: Attendance */}
-        <button
-          onClick={() => onSelectTab('calendar')}
-          className="p-6 rounded-3xl border border-slate-200 bg-white shadow-sm hover:bg-slate-50 flex items-center justify-between text-left transition-all active:scale-[0.98] cursor-pointer group"
+        <div
+          className="p-6 rounded-3xl border border-slate-200 bg-white shadow-sm flex items-center justify-between text-left"
         >
           <div className="space-y-1">
             <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">
               Treinos no Mês
             </span>
-            <h3 className="text-3xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{treinosMes}</h3>
+            <h3 className="text-3xl font-black text-slate-900">{treinosMes}</h3>
             <p className="text-[10px] text-slate-500 font-semibold">Frequência registrada</p>
           </div>
           <div className="p-4 bg-indigo-50 rounded-2xl text-indigo-600">
             <Calendar className="w-6 h-6" />
           </div>
-        </button>
+        </div>
 
       </div>
 
