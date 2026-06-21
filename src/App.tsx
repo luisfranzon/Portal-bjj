@@ -25,6 +25,11 @@ export default function App() {
   const [selectedTab, setSelectedTab] = useState<'dashboard' | 'lesson'>('dashboard');
   const [selectedTechnique, setSelectedTechnique] = useState<Technique | null>(null);
 
+  // Drilldown and filter states
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [beltFilter, setBeltFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTechnique, setEditingTechnique] = useState<Technique | null>(null);
@@ -282,11 +287,8 @@ export default function App() {
       
       {/* Sidebar Navigation */}
       <Sidebar
-        techniques={techniques}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
-        selectedTechnique={selectedTechnique}
-        setSelectedTechnique={setSelectedTechnique}
         onAddTechnique={openAddModal}
         onLogout={handleLogout}
         userEmail={user.email}
@@ -313,6 +315,12 @@ export default function App() {
                 }}
                 onAddTechnique={openAddModal}
                 onImportBackup={handleImportBackup}
+                selectedModule={selectedModule}
+                setSelectedModule={setSelectedModule}
+                beltFilter={beltFilter}
+                setBeltFilter={setBeltFilter}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
               />
             )}
 
@@ -326,6 +334,10 @@ export default function App() {
                 onUpdateProgress={handleUpdateProgress}
                 onToggleSparring={handleToggleSparring}
                 onUpdateDescription={handleUpdateDescription}
+                onBack={() => {
+                  setSelectedTechnique(null);
+                  setSelectedTab('dashboard');
+                }}
               />
             )}
           </>

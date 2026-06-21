@@ -10,7 +10,8 @@ import {
   ExternalLink,
   Save,
   HelpCircle,
-  FileText
+  FileText,
+  ChevronLeft
 } from 'lucide-react';
 
 interface LessonViewerProps {
@@ -20,6 +21,7 @@ interface LessonViewerProps {
   onUpdateProgress: (id: string, progress: number) => void | Promise<void>;
   onToggleSparring: (id: string, current: boolean) => void | Promise<void>;
   onUpdateDescription: (id: string, notes: string) => void | Promise<void>;
+  onBack: () => void;
 }
 
 export default function LessonViewer({
@@ -28,7 +30,8 @@ export default function LessonViewer({
   onDelete,
   onUpdateProgress,
   onToggleSparring,
-  onUpdateDescription
+  onUpdateDescription,
+  onBack
 }: LessonViewerProps) {
   const [sliderValue, setSliderValue] = useState(technique.progress);
   const [notes, setNotes] = useState(technique.description || '');
@@ -80,20 +83,30 @@ export default function LessonViewer({
     <div className="flex-1 h-screen overflow-y-auto bg-slate-50 text-slate-800 flex flex-col font-sans">
       {/* Header Bar */}
       <div className="p-6 border-b border-slate-200 bg-white shadow-sm sticky top-0 z-20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 tracking-wider">
-              {technique.group}
-            </span>
-            {technique.testedInSparring && (
-              <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 tracking-wider">
-                DOMINADO NO ROLA
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={onBack}
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-600 border border-slate-200 active:scale-95 transition-all cursor-pointer mr-1 shrink-0 flex items-center justify-center shadow-sm"
+            title="Voltar"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 tracking-wider">
+                {technique.group}
               </span>
-            )}
+              {technique.testedInSparring && (
+                <span className="text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 tracking-wider">
+                  DOMINADO NO ROLA
+                </span>
+              )}
+            </div>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900 truncate">
+              {technique.name}
+            </h1>
           </div>
-          <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">
-            {technique.name}
-          </h1>
         </div>
 
         {/* Action Buttons */}
